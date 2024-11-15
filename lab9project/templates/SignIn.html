@@ -1,0 +1,64 @@
+{% load django_bootstrap5 %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In</title>
+    {% bootstrap_css %}
+</head>
+<body>
+    {% include 'Header.html' %} <!-- Include the Header component -->
+
+    <div class="container mt-4">
+        <div class="row">
+            <!-- Sign In Section -->
+            <div class="col-md-6 border-end">
+                <h3 class="text-center">Sign In</h3>
+                <form method="POST" action="{% url 'signin' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <input
+                            type="text"
+                            name="User_Name"
+                            class="form-control"
+                            placeholder="Username"
+                            value="{{ formData.User_Name|default:'' }}"
+                            required
+                        />
+                    </div>
+                    <div class="mb-3">
+                        <input
+                            type="password"
+                            name="Password"
+                            class="form-control"
+                            placeholder="Password"
+                            value="{{ formData.Password|default:'' }}"
+                            required
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        class="btn w-100"
+                        style="background-color: #ffe6e6; color: #000;"
+                    >
+                        Sign In
+                    </button>
+                    {% if errorMessage %}
+                        <p class="text-danger mt-3 text-center">{{ errorMessage }}</p>
+                    {% endif %}
+                </form>
+            </div>
+
+            <!-- Sign Up Section -->
+            <div class="col-md-6">
+                {% include 'SignUp.html' %}
+            </div>
+        </div>
+    </div>
+    
+    {% bootstrap_javascript %}
+</body>
+</html>
