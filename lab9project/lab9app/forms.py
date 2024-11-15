@@ -35,3 +35,17 @@ class ProductForm(forms.Form):
             raise forms.ValidationError("Sell By date is required for Food & Beverage.")
 
         return cleaned_data
+
+#Form that handling the user input of user name and password when user sign in
+class SignInForm(forms.Form):
+    email = forms.EmailField(
+        label="Email Address",
+        max_length=100,
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Enter your email'})
+    )
+    password = forms.CharField(
+        label="Password", 
+        max_length=50, 
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter Password'})
+    )
+

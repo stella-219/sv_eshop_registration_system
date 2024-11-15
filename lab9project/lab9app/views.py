@@ -1,14 +1,18 @@
 
 from django.shortcuts import get_object_or_404, render,redirect
 from django.views.generic import ListView, DetailView
-from .models import Products, Rating, GeneralMerchandise, FoodBeverage
-from .forms import ProductForm
+from django.http import JsonResponse
+from .models import Products, Rating, GeneralMerchandise, FoodBeverage, User, Admin, Customer
+from .forms import ProductForm, SignInForm
 
 # Product List View (Class-Based)
 class ProductListView(ListView):
     model = Products
     template_name = 'HomePage.html'
     context_object_name = 'products'
+
+def get_star_range(rating_score):
+    return range(1, rating_score + 1)
 
 # Product Detail View (Class-Based)
 class ProductDetailView(DetailView):
@@ -19,7 +23,25 @@ class ProductDetailView(DetailView):
     def get_context_data(self, **kwargs):
         # Add product ratings to the context for the product detail page
         context = super().get_context_data(**kwargs)
-        context['product_ratings'] = Rating.objects.filter(product=self.object)
+        product_ratings = Rating.objects.filter(product=self.object)
+
+        # Add pre-calculated star ranges to ratings
+        ratings_with_stars = [
+            {
+                "comments": rating.comments,
+                "rate_score": rating.rate_score,
+                "stars": range(1, rating.rate_score + 1),
+            }
+            for rating in product_ratings
+        ]
+
+        context['product_ratings'] = ratings_with_stars
+
+        # Dynamically set the quantity range based on quantity_available
+        max_purchase_limit = 20  # Maximum limit for purchase
+        quantity_available = self.object.quantity_available or 0  # Fallback to 0 if None
+        context['quantity_range'] = range(1, min(max_purchase_limit, quantity_available) + 1)
+
         return context
 
 
@@ -63,3 +85,74 @@ def Product_Create(request):
         form = ProductForm()
 
     return render(request, 'ProductCreate.html', {'form': form})
+
+
+# Updated Product Delete View
+def Product_Delete(request, product_id):
+    if request.method == 'POST':
+        # Get the product
+        product = get_object_or_404(Products, pk=product_id)
+
+        # Determine product category and delete from the respective table
+        if product.category == 'food_beverage':
+            FoodBeverage.objects.filter(product=product).delete()
+        elif product.category == 'general_merchandise':
+            GeneralMerchandise.objects.filter(product=product).delete()
+
+        # Delete the product from the Products table
+        product.delete()
+
+        return JsonResponse({'success': True})
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+def sign_in(request):
+    """
+    Handles user sign-in functionality. Identifies whether the user is an admin or customer
+    and redirects them to the homepage while storing their role in the session.
+    """
+    if request.method == 'POST':
+        form = SignInForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            password = form.cleaned_data['password']
+
+            try:
+                # Authenticate user by checking username and password
+                user = User.objects.get(email_address=email, password=password)
+
+                # Determine the user's role
+                if Customer.objects.filter(user=user).exists():
+                    user_role = 'customer'
+                elif Admin.objects.filter(user=user).exists():
+                    user_role = 'admin'
+                else:
+                    user_role = 'unknown'
+
+                # Store user info in session
+                request.session['user_id'] = user.user_id
+                request.session['user_role'] = user_role
+
+                # Redirect to the homepage
+                return redirect('home')  # Replace with the name of your homepage URL pattern
+
+            except User.DoesNotExist:
+                # Invalid username or password
+                return render(request, 'SignIn.html', {
+                    'form': form,
+                    'errorMessage': 'Invalid username or password'
+                })
+
+        else:
+            # Form validation errors
+            return render(request, 'SignIn.html', {
+                'form': form,
+                'errorMessage': 'Please correct the errors below.'
+            })
+
+    else:
+        # Handle GET request
+        form = SignInForm()
+
+    return render(request, 'SignIn.html', {'form': form})

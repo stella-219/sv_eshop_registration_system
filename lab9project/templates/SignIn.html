@@ -12,40 +12,52 @@
 <body>
     {% include 'Header.html' %} <!-- Include the Header component -->
 
-    <div class="container mt-4">
+    <div class="container mt-5">
         <div class="row">
             <!-- Sign In Section -->
-            <div class="col-md-6 border-end">
-                <h3 class="text-center">Sign In</h3>
-                <form method="POST" action="{% url 'signin' %}">
+            <div class="col-md-6">
+                <h3 class="text-center mb-4">Sign In</h3>
+                <form method="POST" action="{% url 'sign_in' %}">
                     {% csrf_token %}
+                    
+                    <!-- Username Input -->
                     <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
                         <input
-                            type="text"
-                            name="User_Name"
+                            type="email"
+                            id="email"
+                            name="email"
                             class="form-control"
-                            placeholder="Username"
-                            value="{{ formData.User_Name|default:'' }}"
+                            placeholder="Enter your email"
+                            value="{{ form.email.value|default:'' }}"
                             required
                         />
                     </div>
+                    
+                    <!-- Password Input -->
                     <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
                         <input
                             type="password"
-                            name="Password"
+                            id="password"
+                            name="password"
                             class="form-control"
-                            placeholder="Password"
-                            value="{{ formData.Password|default:'' }}"
+                            placeholder="Enter your password"
                             required
                         />
                     </div>
+                    
+                    <!-- Submit Button -->
                     <button
                         type="submit"
-                        class="btn w-100"
-                        style="background-color: #ffe6e6; color: #000;"
+                        class="btn btn-dark w-100"
+                        style = "background-color: white;
+                        color: black;"
                     >
                         Sign In
                     </button>
+                    
+                    <!-- Error Message -->
                     {% if errorMessage %}
                         <p class="text-danger mt-3 text-center">{{ errorMessage }}</p>
                     {% endif %}
@@ -53,9 +65,7 @@
             </div>
 
             <!-- Sign Up Section -->
-            <div class="col-md-6">
-                {% include 'SignUp.html' %}
-            </div>
+
         </div>
     </div>
     

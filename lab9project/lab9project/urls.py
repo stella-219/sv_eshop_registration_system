@@ -17,18 +17,16 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from lab9app import views
-from lab9app.views import ProductListView, ProductDetailView,Product_Create
+from lab9app.views import ProductListView, ProductDetailView,Product_Create,Product_Delete, sign_in
 
 urlpatterns = [
     path("admin/", admin.site.urls),
 
     path('', ProductListView.as_view(), name='home'),  # Root URL redirects to product list
-    path('products/', ProductListView.as_view(), name='product_list'),
-    path('products/<int:pk>/', ProductDetailView.as_view(), name='product_detail'),
+    path('products/', ProductListView.as_view(), name='product_list'),      #all products
+    path('products/<int:pk>/', ProductDetailView.as_view(), name='product_detail'),    #product details
     path('products/new/', Product_Create, name='Product_Create'),  # New product creation
-    #path('list/', views.EmployeeList.as_view(), name='employee_list'),
-    #path('list/<int:pk>', views.EmployeeDetail.as_view(),name='employee_detail'),
-    #path('create', views.EmployeeCreate.as_view() ),
-    #path('update/<int:pk>', views.EmployeeUpdate.as_view(),name='employee_update'),
-    #path('delete/<int:pk>', views.EmployeeDelete.as_view(),name='employee_delete'),
+    path('product/delete/<int:product_id>/', Product_Delete, name='Product_Delete'), #delete function
+    path('sign-in/', sign_in, name='sign_in'),             #user sign in
+
 ]

@@ -47,11 +47,11 @@
         <div class="product-container">
             {% for product in products %}
             <div class="product-card">
-                {% if product.image %}
+                <!-- {% if product.image %}
                 <img src="{{ product.image }}" 
                      alt="{{ product.name|default:'Product Image' }}" 
                      class="product-image">
-                {% endif %}
+                {% endif %} -->
                 <h2 style="font-size: 1.0em; margin-bottom: 10px;">{{ product.name|default:"No Name" }}</h2>
                 <p style="font-size: 1.0em; font-weight: bold; color: #333; margin-bottom: 10px;">
                     ${{ product.price|floatformat:2|default:"N/A" }}
@@ -61,6 +61,9 @@
                         <a href="{% url 'product_detail' product.Product_ID %}" title="View Details" class="text-primary">
                             <i class="fas fa-eye"></i> View Details
                         </a>
+                        <img src="{{ product.image }}" 
+                        alt="{{ product.name|default:'Product Image' }}" 
+                        class="product-image">
                     {% endif %}
                     <i class="fas fa-edit" style="cursor: pointer;" title="Edit Product"></i>
                     <i class="fas fa-trash" style="cursor: pointer; color: red;" title="Delete Product"></i>

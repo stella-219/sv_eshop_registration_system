@@ -23,7 +23,7 @@
             <!-- Left Section - Product Image -->
             <div class="col-md-6 text-center">
                 <img 
-                    src="https://storage.googleapis.com/eshop_product_images/{{ product.image }}" 
+                    src="{{ product.image }}" 
                     alt="{{ product.proname|default:'Product Image' }}" 
                     class="img-fluid"
                     style="max-width: 400px; height: auto;"
@@ -40,7 +40,7 @@
                 <div class="my-4">
                     <label for="quantity" class="form-label">Quantity</label>
                     <select id="quantity" class="form-select w-50">
-                        {% for i in 1|to:20 %}
+                        {% for i in quantity_range %}
                             <option value="{{ i }}">{{ i }}</option>
                         {% endfor %}
                     </select>
@@ -59,7 +59,7 @@
             {% for rating in product_ratings %}
                 <div class="mb-3">
                     <div class="d-flex align-items-center mb-1">
-                        {% for i in 1|to:rating.rate_score %}
+                        {% for i in rating.stars %}
                             <i class="fas fa-star star"></i>
                         {% endfor %}
                     </div>
@@ -70,7 +70,7 @@
             <p>No reviews for this product yet.</p>
         {% endif %}
     </div>
-
+    
     {% bootstrap_javascript %}
 </body>
 </html>
