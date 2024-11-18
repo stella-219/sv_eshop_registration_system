@@ -110,7 +110,12 @@
                 <div class="icon-container">
                     <i class="fas fa-trash" style="cursor: pointer; color: red;" 
                        title="Delete Product" 
-                       onclick="deleteProduct({{product.product_id }})"></i>
+                       onclick="deleteProduct(product.product_id)">
+                    </i>
+                    <a href="{% url 'edit_product' product.product_id %}" title="Edit Product">
+                        <i class="fas fa-edit text-warning"></i>
+                    </a>
+                    
                 </div>
             </div>
             {% endfor %}

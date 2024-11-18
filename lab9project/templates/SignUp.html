@@ -2,7 +2,7 @@
 {% load static %}
 
 <div>
-    <h3 class="text-center">Sign Up</h3>
+    <h4 class="text-center">Sign Up</h4>
     <form method="POST" action="{% url 'SignUp' %}">
         {% csrf_token %}
 
@@ -11,10 +11,11 @@
             <label class="form-check me-3">
                 <input
                     type="radio"
+                    id="customer"
                     name="userType"
                     value="customer"
                     class="form-check-input"
-                    {% if userType == 'customer' %}checked{% endif %}
+                    onchange="toggleAdditionalFields()"
                     required
                 />
                 <span class="ms-1">Customer</span>
@@ -22,10 +23,11 @@
             <label class="form-check">
                 <input
                     type="radio"
+                    id="admin"
                     name="userType"
                     value="admin"
                     class="form-check-input"
-                    {% if userType == 'admin' %}checked{% endif %}
+                    onchange="toggleAdditionalFields()"
                 />
                 <span class="ms-1">Admin</span>
             </label>
@@ -80,7 +82,7 @@
         </div>
 
         <!-- Additional Fields for Customer -->
-        {% if userType == 'customer' %}
+        <div id="customerFields" style="display: none;">
             <div class="mb-3">
                 <input
                     type="text"
@@ -88,7 +90,6 @@
                     class="form-control"
                     placeholder="Bank Account"
                     value="{{ formData.Bank_Account|default:'' }}"
-                    required
                 />
             </div>
             <div class="mb-3">
@@ -98,10 +99,9 @@
                     class="form-control"
                     placeholder="Home Address"
                     value="{{ formData.Home_Address|default:'' }}"
-                    required
                 />
             </div>
-        {% endif %}
+        </div>
 
         <!-- Submit Button -->
         <button
@@ -112,3 +112,16 @@
         </button>
     </form>
 </div>
+
+<script>
+    function toggleAdditionalFields() {
+        const customerFields = document.getElementById('customerFields');
+        const isCustomer = document.getElementById('customer').checked;
+
+        if (isCustomer) {
+            customerFields.style.display = 'block';
+        } else {
+            customerFields.style.display = 'none';
+        }
+    }
+</script>

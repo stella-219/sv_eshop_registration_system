@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from lab9app import views
-from lab9app.views import ProductListView, ProductDetailView,Product_Create,Product_Delete, sign_in
+from lab9app.views import ProductListView, ProductDetailView,Product_Create,Product_Delete, sign_in, sign_up,edit_product
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -28,5 +28,7 @@ urlpatterns = [
     path('products/new/', Product_Create, name='Product_Create'),  # New product creation
     path('product/delete/<int:product_id>/', Product_Delete, name='Product_Delete'), #delete function
     path('sign-in/', sign_in, name='sign_in'),             #user sign in
+    path('signup/', sign_up, name='SignUp'),
+    path('edit/<int:product_id>/', edit_product, name='edit_product'),
 
 ]

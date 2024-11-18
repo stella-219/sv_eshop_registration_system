@@ -2,8 +2,9 @@
 from django.shortcuts import get_object_or_404, render,redirect
 from django.views.generic import ListView, DetailView
 from django.http import JsonResponse
+from django.db import transaction
 from .models import Products, Rating, GeneralMerchandise, FoodBeverage, User, Admin, Customer
-from .forms import ProductForm, SignInForm
+from .forms import ProductForm, SignInForm, SignUpForm
 
 # Product List View (Class-Based)
 class ProductListView(ListView):
@@ -156,3 +157,83 @@ def sign_in(request):
         form = SignInForm()
 
     return render(request, 'SignIn.html', {'form': form})
+
+
+def sign_up(request):
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user_type = form.cleaned_data['userType']
+            user_name = form.cleaned_data['User_Name']
+            password = form.cleaned_data['Password']
+            email = form.cleaned_data['Email_Address']
+            phone = form.cleaned_data.get('Phone_Number', None)
+
+            try:
+                with transaction.atomic():  # Wrap the database operations in a transaction
+                    # Create a new User
+                    user = User.objects.create(
+                        user_name=user_name,
+                        password=password,
+                        email_address=email,
+                        phone_number=phone,
+                    )
+
+                    # Create Customer or Admin record
+                    if user_type == 'customer':
+                        bank_account = form.cleaned_data.get('Bank_Account', None)
+                        home_address = form.cleaned_data.get('Home_Address', None)
+                        Customer.objects.create(
+                            user=user,
+                            bank_account=bank_account,
+                            home_address=home_address,
+                        )
+                    elif user_type == 'admin':
+                        Admin.objects.create(user=user)
+
+                    # Redirect to HomePage after successful sign-up
+                    return redirect('home')
+
+            except Exception as e:
+                form.add_error(None, f"An error occurred: {str(e)}")
+    else:
+        form = SignUpForm()
+
+    return render(request, 'SignUp.html', {'form': form})
+
+
+def edit_product(request, product_id):
+    product = get_object_or_404(Products, pk=product_id)
+    food_beverage = None
+    general_merchandise = None
+
+    if product.category == "FOOD_BEVERAGE":
+        food_beverage = FoodBeverage.objects.filter(product=product).first()
+    elif product.category == "GENERAL_MERCHANDISE":
+        general_merchandise = GeneralMerchandise.objects.filter(product=product).first()
+
+    if request.method == 'POST':
+        # Update product attributes
+        product.proname = request.POST['proname']
+        product.brand = request.POST['brand']
+        product.cost = request.POST['cost']
+        product.price = request.POST['price']
+        product.prodescription = request.POST['prodescription']
+        product.category = request.POST['category']
+        product.save()
+
+        # Update category-specific fields
+        if product.category == "FOOD_BEVERAGE" and food_beverage:
+            food_beverage.sell_by = request.POST['sell_by']
+            food_beverage.save()
+        elif product.category == "GENERAL_MERCHANDISE" and general_merchandise:
+            general_merchandise.color = request.POST['color']
+            general_merchandise.save()
+
+        return redirect('home')  # Redirect back to the Home page
+
+    return render(request, 'ProductEdit.html', {
+        'product': product,
+        'food_beverage': food_beverage,
+        'general_merchandise': general_merchandise,
+    })

@@ -49,3 +49,20 @@ class SignInForm(forms.Form):
         widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter Password'})
     )
 
+
+#Form that handle user signup
+class SignUpForm(forms.Form):
+    user_type_choices = [
+        ('customer', 'Customer'),
+        ('admin', 'Admin'),
+    ]
+
+    userType = forms.ChoiceField(choices=user_type_choices, widget=forms.RadioSelect, required=True)
+    User_Name = forms.CharField(max_length=100, required=True, widget=forms.TextInput(attrs={'placeholder': 'Username'}))
+    Password = forms.CharField(max_length=50, required=True, widget=forms.PasswordInput(attrs={'placeholder': 'Password'}))
+    Email_Address = forms.EmailField(required=True, widget=forms.EmailInput(attrs={'placeholder': 'Email Address'}))
+    Phone_Number = forms.CharField(max_length=15, required=False, widget=forms.TextInput(attrs={'placeholder': 'Phone Number'}))
+    
+    # Customer-specific fields
+    Bank_Account = forms.CharField(max_length=50, required=False, widget=forms.TextInput(attrs={'placeholder': 'Bank Account'}))
+    Home_Address = forms.CharField(max_length=255, required=False, widget=forms.TextInput(attrs={'placeholder': 'Home Address'}))
