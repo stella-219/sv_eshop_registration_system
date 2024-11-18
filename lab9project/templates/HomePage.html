@@ -77,20 +77,24 @@
         </h2>
 
         <hr />
-        <a href="{% url 'Product_Create' %}">
-            <button class="ms-3" style="
-                        background-color: white;
-                        color: black;
-                        border: 1px solid black;
-                        border-radius: 50px;
-                        padding: 10px 20px;
-                        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-                        font-size: 16px;
-                        cursor: pointer;
-                    ">
-                Add New Product
-            </button>
-        </a>
+
+        <!-- Only for Admin -->
+        {% if request.session.user_role == 'admin' %}
+            <a href="{% url 'Product_Create' %}">
+                <button class="ms-3" style="
+                            background-color: white;
+                            color: black;
+                            border: 1px solid black;
+                            border-radius: 50px;
+                            padding: 10px 20px;
+                            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+                            font-size: 16px;
+                            cursor: pointer;
+                        ">
+                    Add New Product
+                </button>
+            </a>
+        {% endif %}
 
         <!-- Product List -->
         <div class="product-container">
@@ -107,15 +111,16 @@
                         ${{ product.price|floatformat:2|default:"N/A" }}
                     </p>
                 </a>
-                <div class="icon-container">
-                    <i class="fas fa-trash" style="cursor: pointer; color: red;" 
-                       title="Delete Product" 
-                       onclick="deleteProduct(product.product_id)">
-                    </i>
-                    <a href="{% url 'edit_product' product.product_id %}" title="Edit Product">
-                        <i class="fas fa-edit text-warning"></i>
-                    </a>
-                    
+                <div class="icon-container d-flex justify-content-between align-items-center">
+                    {% if request.session.user_role == 'admin' %}
+                        <a href="{% url 'edit_product' product.product_id %}" title="Edit Product">
+                            <i class="fas fa-edit" style="cursor: pointer; color: grey;"></i>
+                        </a>
+                        <i class="fas fa-trash" style="cursor: pointer; color: grey;" 
+                           title="Delete Product" 
+                           onclick="deleteProduct({{ product.product_id }})">
+                        </i>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}
@@ -128,8 +133,15 @@
 
     <script>
         function toggleChat() {
-            const chatElement = document.getElementById('chat');
-            chatElement.classList.toggle('d-none');
+            const chatBox = document.getElementById("chat-box");
+            const chatToggleBtn = document.getElementById("chat-toggle-btn");
+            if (chatBox.style.display === "none") {
+                chatBox.style.display = "block";
+                chatToggleBtn.style.display = "none";
+            } else {
+                chatBox.style.display = "none";
+                chatToggleBtn.style.display = "block";
+            }
         }
     
         function deleteProduct(productId) {

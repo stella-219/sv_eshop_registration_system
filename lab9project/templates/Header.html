@@ -47,20 +47,39 @@
                     <li class="nav-item"><a class="nav-link text-dark" href="#">Orders</a></li>
                     <li class="nav-item"><a class="nav-link text-dark" href="#">Contact</a></li>
                 </ul>
-                <a href="{% url 'sign_in' %}">
-                    <button class="ms-3" style="
-                        background-color: white;
-                        color: black;
-                        border: 1px solid black;
-                        border-radius: 50px;
-                        padding: 10px 20px;
-                        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-                        font-size: 16px;
-                        cursor: pointer;
-                    ">
-                        Sign In / Sign Up
-                    </button>
-                </a>
+                <!-- Display Sign In/Sign Up button when not sign in or Welcome back, user name when user sign in -->
+                {% if request.session.user_id %}
+                    <div class="ms-3">
+                        <span class="text-danger">Welcome back, {{ request.session.user_name }}</span>
+                        <a href="{% url 'sign_out' %}">
+                            <button style="
+                                background-color: white;
+                                color: black;
+                                border: 1px solid black;
+                                border-radius: 50px;
+                                padding: 10px 20px;
+                                box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+                                font-size: 16px;
+                                cursor: pointer;
+                            ">Sign Out</button>
+                        </a>
+                    </div>
+                {% else %}
+                        <a href="{% url 'sign_in' %}">
+                            <button class="ms-3" style="
+                                background-color: white;
+                                color: black;
+                                border: 1px solid black;
+                                border-radius: 50px;
+                                padding: 10px 20px;
+                                box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+                                font-size: 16px;
+                                cursor: pointer;
+                            ">
+                                Sign In / Sign Up
+                            </button>
+                        </a>
+                {% endif %}
             </div>
         </div>
     </nav>

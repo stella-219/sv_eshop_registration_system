@@ -65,9 +65,7 @@
                         alt="{{ product.name|default:'Product Image' }}" 
                         class="product-image">
                     {% endif %}
-                    <a href="{% url 'edit_product' product.Product_ID %}" title="Edit Product" class="text-warning">
-                        <i class="fas fa-edit"></i> Edit
-                    </a>
+                    <i class="fas fa-edit" style="cursor: pointer; color:black;" title="Edit Product"></i>
                     <i class="fas fa-trash" style="cursor: pointer; color: red;" title="Delete Product"></i>
                 </div>
             </div>

@@ -5,6 +5,13 @@ from django.http import JsonResponse
 from django.db import transaction
 from .models import Products, Rating, GeneralMerchandise, FoodBeverage, User, Admin, Customer
 from .forms import ProductForm, SignInForm, SignUpForm
+import openai
+import json
+from django.views.decorators.csrf import csrf_exempt
+
+# Configure your OpenAI API key
+openai.api_key = 'sk-PBT3YDS6b-ezRLY_ScAe6ffk5FjtAxZV6mU5oKyq7hT3BlbkFJD587NH6VbXDkMXc6_TBnbCe9-xuCsUkNhTM6iAa9EA'
+
 
 # Product List View (Class-Based)
 class ProductListView(ListView):
@@ -44,7 +51,6 @@ class ProductDetailView(DetailView):
         context['quantity_range'] = range(1, min(max_purchase_limit, quantity_available) + 1)
 
         return context
-
 
 # Product Create View
 def Product_Create(request):
@@ -87,7 +93,6 @@ def Product_Create(request):
 
     return render(request, 'ProductCreate.html', {'form': form})
 
-
 # Updated Product Delete View
 def Product_Delete(request, product_id):
     if request.method == 'POST':
@@ -107,7 +112,6 @@ def Product_Delete(request, product_id):
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
-
 def sign_in(request):
     """
     Handles user sign-in functionality. Identifies whether the user is an admin or customer
@@ -124,16 +128,12 @@ def sign_in(request):
                 user = User.objects.get(email_address=email, password=password)
 
                 # Determine the user's role
-                if Customer.objects.filter(user=user).exists():
-                    user_role = 'customer'
-                elif Admin.objects.filter(user=user).exists():
-                    user_role = 'admin'
-                else:
-                    user_role = 'unknown'
+                user_role = 'customer' if Customer.objects.filter(user=user).exists() else 'admin'
 
                 # Store user info in session
                 request.session['user_id'] = user.user_id
                 request.session['user_role'] = user_role
+                request.session['user_name'] = user.user_name
 
                 # Redirect to the homepage
                 return redirect('home')  # Replace with the name of your homepage URL pattern
@@ -157,7 +157,6 @@ def sign_in(request):
         form = SignInForm()
 
     return render(request, 'SignIn.html', {'form': form})
-
 
 def sign_up(request):
     if request.method == 'POST':
@@ -201,6 +200,12 @@ def sign_up(request):
 
     return render(request, 'SignUp.html', {'form': form})
 
+def sign_out(request):
+    """
+    Clears the session data and redirects to the home page.
+    """
+    request.session.flush()  # Remove all session data
+    return redirect('home')  # Redirect to the main page
 
 def edit_product(request, product_id):
     product = get_object_or_404(Products, pk=product_id)
@@ -237,3 +242,44 @@ def edit_product(request, product_id):
         'food_beverage': food_beverage,
         'general_merchandise': general_merchandise,
     })
+
+#Query in ChatGPT
+@csrf_exempt
+def chat_with_gpt(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            user_message = data.get("message", "").lower()
+
+            print(f"Received message: {user_message}")  # Debugging statement
+
+            if "get products" in user_message:
+                products = Products.objects.all()
+                if products.exists():
+                    product_list = "\n".join([
+                        f"- {product.proname} (${product.price})" for product in products
+                    ])
+                    return JsonResponse(
+                        {"response": f"Here are the available products:\n{product_list}"},
+                        status=200
+                    )
+                else:
+                    return JsonResponse(
+                        {"response": "No products are available at the moment."},
+                        status=200
+                    )
+
+            # Default ChatGPT response
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "user", "content": user_message},
+                ]
+            )
+            gpt_response = response['choices'][0]['message']['content']
+            return JsonResponse({"response": gpt_response}, status=200)
+        except Exception as e:
+            print(f"Error: {e}")  # Debugging statement
+            return JsonResponse({"error": str(e)}, status=500)
+    return JsonResponse({"error": "Invalid request method"}, status=400)

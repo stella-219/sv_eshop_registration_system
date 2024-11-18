@@ -8,26 +8,28 @@
         .btn {
             position: fixed;
             bottom: 20px;
-            right: 20px;
+            right: 20px; /* Align to the bottom-right corner */
             background-color: #ffe6e6;
             color: black;
             border-radius: 50px;
             padding: 10px 20px;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
+            cursor: pointer;
             white-space: normal;
             text-align: center;
+            z-index: 1000; /* Ensures it's above other elements */
         }
         .chat-box {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 20px; /* Aligns it to the bottom of the viewport */
+            right: 20px; /* Aligns it to the right of the viewport */
             width: 300px;
             border: 1px solid #ddd;
             border-radius: 8px;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
+            z-index: 1000; /* Ensures it's above other elements */
             background-color: #f8f8f8;
+            display: none; /* Initially hidden */
         }
         .chat-box-header {
             display: flex;
@@ -44,9 +46,22 @@
         }
         .chat-box-footer {
             padding: 8px;
-            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px; /* Space between dropdown and button */
         }
         .btn-close {
+            cursor: pointer;
+        }
+        .chat-dropdown {
+            flex: 1; /* Dropdown takes full width */
+        }
+        .send-btn {
+            background-color: #ffe6e6;
+            color: black;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 10px;
             cursor: pointer;
         }
     </style>
@@ -58,24 +73,21 @@
     </button>
 
     <!-- Chat Box -->
-    <div id="chat-box" class="chat-box" style="display: none;">
+    <div id="chat-box" class="chat-box">
         <div class="chat-box-header">
             <span>Chat with Lemon</span>
             <button class="btn-close" aria-label="Close" onclick="toggleChat()">✖</button>
         </div>
-        <div class="chat-box-body">
+        <div class="chat-box-body" id="chat-body">
             <p class="text-muted text-center">Start a conversation with Lemon!</p>
         </div>
         <div class="chat-box-footer">
-            <input
-                type="text"
-                placeholder="Type your message..."
-                class="form-control"
-                style="width: 100%; margin-bottom: 10px;"
-            />
-            <button class="btn" style="width: 100%; background-color: #ffe6e6; color: #000;">
-                Send
-            </button>
+            <!-- Dropdown for predefined queries -->
+            <select id="query-dropdown" class="form-select chat-dropdown">
+                <option value="" disabled selected>Select a query</option>
+                <option value="get products">Get Products</option>
+            </select>
+            <button id="send-btn" class="send-btn">Send</button>
         </div>
     </div>
 
@@ -83,15 +95,71 @@
         function toggleChat() {
             const chatBox = document.getElementById("chat-box");
             const chatToggleBtn = document.getElementById("chat-toggle-btn");
-            if (chatBox.style.display === "none") {
-                chatBox.style.display = "block";
-                chatToggleBtn.style.display = "none";
+            if (chatBox.style.display === "none" || chatBox.style.display === "") {
+                chatBox.style.display = "block"; // Show chatbox
+                chatToggleBtn.style.display = "none"; // Hide toggle button
             } else {
-                chatBox.style.display = "none";
-                chatToggleBtn.style.display = "block";
+                chatBox.style.display = "none"; // Hide chatbox
+                chatToggleBtn.style.display = "block"; // Show toggle button
             }
         }
+
+        const chatBody = document.getElementById("chat-body");
+        const sendBtn = document.getElementById("send-btn");
+        const queryDropdown = document.getElementById("query-dropdown");
+
+        // Utility function to get CSRF token
+        function getCSRFToken() {
+            const cookies = document.cookie.split("; ");
+            for (const cookie of cookies) {
+                const [name, value] = cookie.split("=");
+                if (name === "csrftoken") {
+                    return value;
+                }
+            }
+            return null;
+        }
+
+        // Send message to ChatGPT API
+        async function sendMessage() {
+            const selectedQuery = queryDropdown.value;
+
+            if (!selectedQuery) {
+                alert("Please select a query.");
+                return;
+            }
+
+            // Append user message to chat
+            chatBody.innerHTML += `<p><strong>You:</strong> ${selectedQuery}</p>`;
+            chatBody.scrollTop = chatBody.scrollHeight; // Auto-scroll
+
+            try {
+                const response = await fetch("/api/chat/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCSRFToken(),
+                    },
+                    body: JSON.stringify({ message: selectedQuery }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    chatBody.innerHTML += `<p><strong>Lemon:</strong> ${data.response}</p>`;
+                } else {
+                    chatBody.innerHTML += `<p><strong>Error:</strong> ${data.error}</p>`;
+                }
+            } catch (error) {
+                chatBody.innerHTML += `<p><strong>Error:</strong> Unable to connect to the server.</p>`;
+            }
+
+            // Reset dropdown
+            queryDropdown.selectedIndex = 0;
+            chatBody.scrollTop = chatBody.scrollHeight; // Auto-scroll
+        }
+
+        sendBtn.addEventListener("click", sendMessage);
     </script>
 </body>
 </html>
-
