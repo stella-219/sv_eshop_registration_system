@@ -3,11 +3,13 @@ from django.shortcuts import get_object_or_404, render,redirect
 from django.views.generic import ListView, DetailView
 from django.http import JsonResponse
 from django.db import transaction
-from .models import Products, Rating, GeneralMerchandise, FoodBeverage, User, Admin, Customer
+from .models import Products, Rating, GeneralMerchandise, FoodBeverage, User, Admin, Customer, OrderItem, Orders
 from .forms import ProductForm, SignInForm, SignUpForm
 import openai
 import json
+import datetime
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
 
 # Configure your OpenAI API key
 openai.api_key = 'sk-PBT3YDS6b-ezRLY_ScAe6ffk5FjtAxZV6mU5oKyq7hT3BlbkFJD587NH6VbXDkMXc6_TBnbCe9-xuCsUkNhTM6iAa9EA'
@@ -135,8 +137,9 @@ def sign_in(request):
                 request.session['user_role'] = user_role
                 request.session['user_name'] = user.user_name
 
-                # Redirect to the homepage
-                return redirect('home')  # Replace with the name of your homepage URL pattern
+                # Redirect to the next URL or home
+                next_url = request.GET.get('next', 'home')  # Default to home if no next URL
+                return redirect(next_url)
 
             except User.DoesNotExist:
                 # Invalid username or password
@@ -243,6 +246,10 @@ def edit_product(request, product_id):
         'general_merchandise': general_merchandise,
     })
 
+
+def chatbox(request):
+    return render(request, 'chat.html')
+
 #Query in ChatGPT
 @csrf_exempt
 def chat_with_gpt(request):
@@ -269,6 +276,152 @@ def chat_with_gpt(request):
                         status=200
                     )
 
+                    # Handle specific product queries
+            if "get product" in user_message:
+                product_name = user_message.replace("get product", "").strip()
+                product = Products.objects.filter(proname__icontains=product_name).first()
+                if product:
+                    return JsonResponse(
+                        {
+                            "response": f"Product: {product.proname}\nPrice: ${product.price}\nDescription: {product.prodescription}"},
+                        status=200
+                    )
+                else:
+                    return JsonResponse(
+                        {"response": f"No product found matching '{product_name}'."},
+                        status=200
+                    )
+
+
+            print(f"Received message: {user_message}")  # Debugging statement
+
+            # Handle getting orders for a specific user ID
+            if "get order history of user id:" in user_message:
+                # Extract the user ID after "user id:"
+                try:
+                    user_id_str = user_message.split("user id:")[1].strip()
+                    user_id = int(user_id_str)
+                except (IndexError, ValueError):
+                    return JsonResponse(
+                        {"response": "Invalid format. Use 'get order of user id: <user_id>' to fetch order history."},
+                        status=400
+                    )
+
+                # Fetch orders for the user
+                orders = Orders.objects.filter(user_id=user_id).prefetch_related('orderitem_set__product')
+                if orders.exists():
+                    order_history = []
+                    for order in orders:
+                        items = order.orderitem_set.all()
+                        item_details = "\n".join([
+                            f"    - {item.product.proname} (Quantity: {item.quantity})"
+                            for item in items
+                        ])
+                        order_history.append(
+                            f"Order ID: {order.order_id}\nItems:\n{item_details}"
+                        )
+
+                    history = "\n\n".join(order_history)
+                    return JsonResponse(
+                        {"response": f"Here is the order history for user ID {user_id}:\n\n{history}"},
+                        status=200
+                    )
+                else:
+                    return JsonResponse(
+                        {"response": f"No orders found for user ID {user_id}."},
+                        status=200
+                    )
+
+            # Handle "get all products with rating 5"
+            if "get all products with rating 5" in user_message:
+                # Fetch products with a rating of 5
+                products = Products.objects.filter(rating__rate_score=5).distinct()
+                if products.exists():
+                    product_list = "\n".join([
+                        f"- {product.proname} (${product.price})"
+                        for product in products
+                    ])
+                    return JsonResponse(
+                        {"response": f"Products with a rating of 5:\n{product_list}"},
+                        status=200
+                    )
+                else:
+                    return JsonResponse(
+                        {"response": "No products found with a rating of 5."},
+                        status=200
+                    )
+
+            # Handle "get the user information of user id"
+            if "get the user information of user id:" in user_message:
+                # Extract the user ID after "user id:"
+                try:
+                    user_id_str = user_message.split("user id:")[1].strip()
+                    user_id = int(user_id_str)
+                except (IndexError, ValueError):
+                    return JsonResponse(
+                        {"response": "Invalid format. Use 'get the user information of user id: <user_id>'."},
+                        status=400
+                    )
+
+                # Fetch user information
+                try:
+                    user = User.objects.get(user_id=user_id)
+                    user_info = {
+                        "User ID": user.user_id,
+                        "Name": user.user_name,
+                        "Email": user.email_address,
+                        "Phone": user.phone_number,
+                    }
+                    response = "\n".join([f"{key}: {value}" for key, value in user_info.items()])
+                    return JsonResponse({"response": f"User Information:\n{response}"}, status=200)
+                except User.DoesNotExist:
+                    return JsonResponse(
+                        {"response": f"No user found with ID {user_id}."},
+                        status=200
+                    )
+
+            # Handle "get all orders on <date>" or variations
+            if "get the all orders on" in user_message or "get all orders on" in user_message:
+                # Extract the date from the message
+                try:
+                    if "get the all orders on" in user_message:
+                        date_str = user_message.split("get the all orders on")[1].strip()
+                    else:
+                        date_str = user_message.split("get all orders on")[1].strip()
+
+                    order_date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+                except (IndexError, ValueError):
+                    return JsonResponse(
+                        {"response": "Invalid format. Use 'get all orders on <YYYY-MM-DD>' to fetch orders."},
+                        status=400
+                    )
+
+                # Fetch orders for the specified date
+                orders = Orders.objects.filter(order_date__date=order_date).prefetch_related(
+                    'orderitem_set__product')
+                if orders.exists():
+                    order_list = []
+                    for order in orders:
+                        items = order.orderitem_set.all()
+                        item_details = "\n".join([
+                            f"    - {item.product.proname} (Quantity: {item.quantity})"
+                            for item in items
+                        ])
+                        order_list.append(
+                            f"Order ID: {order.order_id}\nItems:\n{item_details}"
+                        )
+
+                    response = "\n\n".join(order_list)
+                    return JsonResponse(
+                        {"response": f"Orders on {order_date}:\n\n{response}"},
+                        status=200
+                    )
+                else:
+                    return JsonResponse(
+                        {"response": f"No orders found on {order_date}."},
+                        status=200
+                    )
+
             # Default ChatGPT response
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
@@ -283,3 +436,68 @@ def chat_with_gpt(request):
             print(f"Error: {e}")  # Debugging statement
             return JsonResponse({"error": str(e)}, status=500)
     return JsonResponse({"error": "Invalid request method"}, status=400)
+
+
+
+def add_to_order(request, product_id):
+    if request.method == "POST":
+        # Retrieve quantity from the form
+        quantity = int(request.POST.get("quantity", 1))  # Default to 1 if no quantity is provided
+        user_id = request.session.get('user_id')  # Retrieve user_id from session
+        
+        print(f"Product ID: {product_id}, Quantity: {quantity}, User ID: {user_id}")
+
+        if not user_id:
+            return redirect('/sign-in/?next=' + request.path)  # Redirect to sign-in if user is not authenticated
+
+        # Check if the user has an in-progress order
+        order, created = Orders.objects.get_or_create(user_id=user_id, order_status='in_progress')
+
+        # Add or update the product in the order
+        order_item, created = OrderItem.objects.get_or_create(
+            order_id=order.order_id,
+            product_id=product_id,
+            defaults={'quantity': quantity}  # Use the selected quantity when creating the item
+        )
+        if not created:
+            # If the item already exists in the order, increment the quantity
+            order_item.quantity += quantity
+            order_item.save()
+
+        return redirect('order_in_process')  # Redirect to the order-in-process page
+
+    return redirect('home')  # Redirect to home if the method is not POST
+
+
+def order_in_process(request):
+    
+    user_id = request.session.get('user_id')  # Retrieve user_id from session
+    try:
+        order = Orders.objects.get(user_id=user_id, order_status='in_progress')
+        items = OrderItem.objects.filter(order_id=order.order_id).select_related('product')
+        for item in items:
+            item.total_price = item.quantity * item.product.price
+    except Orders.DoesNotExist:
+        order = None
+        items = []
+
+    context = {
+        'order': order,
+        'items': items,
+    }
+    return render(request, 'order_in_process.html', context)
+
+def submit_order(request):
+    if request.method == "POST":
+        user = request.user
+        user_id = request.session.get('user_id')  # Retrieve user_id from session
+        try:
+            # Update the order status to 'completed'
+            order = Orders.objects.get(user_id=user_id, order_status='in_progress')
+            order.order_status = 'completed'
+            order.save()
+            return JsonResponse({"success": True})
+        except Orders.DoesNotExist:
+            return JsonResponse({"success": False, "message": "No in-progress order found!"})
+
+    return JsonResponse({"success": False, "message": "Invalid request!"})

@@ -60,7 +60,8 @@ class GeneralMerchandise(models.Model):
 class Orders(models.Model):
     order_id = models.AutoField(db_column='Order_ID', primary_key=True)  # Field name made lowercase.
     user = models.ForeignKey('User', models.DO_NOTHING, db_column='User_ID', blank=True, null=True)  # Field name made lowercase.
-    total_price = models.DecimalField(db_column='Total_Price', max_digits=10, decimal_places=2)  # Field name made lowercase.
+    order_status = models.CharField(db_column='Order_Status', max_length=11, blank=True, null=True)  # Field name made lowercase.
+    order_date = models.DateTimeField(db_column='Order_Date', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         managed = False
@@ -68,14 +69,14 @@ class Orders(models.Model):
 
 
 class OrderItem(models.Model):
-    order = models.OneToOneField(Orders, models.DO_NOTHING, db_column='Order_ID', primary_key=True)  # Field name made lowercase. The composite primary key (Order_ID, Product_ID) found, that is not supported. The first column is selected.
-    product = models.ForeignKey('Products', models.DO_NOTHING, db_column='Product_ID')  # Field name made lowercase.
+    order_item_id = models.AutoField(db_column='Order_Item_ID', primary_key=True)  # Field name made lowercase.
+    order = models.ForeignKey(Orders, models.DO_NOTHING, db_column='Order_ID', blank=True, null=True)  # Field name made lowercase.
+    product = models.ForeignKey('Products', models.DO_NOTHING, db_column='Product_ID', blank=True, null=True)  # Field name made lowercase.
     quantity = models.IntegerField(db_column='Quantity')  # Field name made lowercase.
 
     class Meta:
         managed = False
         db_table = 'ORDER_ITEM'
-        unique_together = (('order', 'product'),)
 
 
 class Payment(models.Model):
@@ -244,20 +245,3 @@ class DjangoSession(models.Model):
     class Meta:
         managed = False
         db_table = 'django_session'
-
-
-class Employee(models.Model):
-    fname = models.CharField(max_length=8, blank=True, null=True)
-    minit = models.CharField(max_length=2, blank=True, null=True)
-    lname = models.CharField(max_length=8, blank=True, null=True)
-    ssn = models.CharField(primary_key=True, max_length=9)
-    bdate = models.DateField(blank=True, null=True)
-    address = models.CharField(max_length=27, blank=True, null=True)
-    sex = models.CharField(max_length=1, blank=True, null=True)
-    salary = models.IntegerField()
-    super_ssn = models.CharField(max_length=9, blank=True, null=True)
-    dno = models.IntegerField()
-
-    class Meta:
-        managed = False
-        db_table = 'employee'

@@ -54,7 +54,6 @@
 </head>
 <body>
     {% include 'Header.html' %}
-    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
     <!-- Hero Section -->
     <div class="hero-section">
@@ -77,6 +76,65 @@
         </h2>
 
         <hr />
+
+        
+        <!-- Filters Section -->
+        <div class="container my-4">
+            <div class="row align-items-center">
+                <!-- Category Filter -->
+                <div class="col-md-2">
+                    <select class="form-select" id="category-filter">
+                        <option value="" selected>All Categories</option>
+                        <option value="General Merchandise">General Merchandise</option>
+                        <option value="Food Beverage">Food Beverage</option>
+                    </select>
+                </div>
+
+                <!-- Brand Filter -->
+                <div class="col-md-2">
+                    <select class="form-select" id="brand-filter">
+                        <option value="" selected>All Brands</option>
+                        <!-- Placeholder for brands. Will be populated dynamically -->
+                    </select>
+                </div>
+
+                <!-- Rating Filter -->
+                <div class="col-md-2">
+                    <select class="form-select" id="rating-filter">
+                        <option value="" selected>All Ratings</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
+
+                <!-- Price Filter -->
+                <div class="col-md-2">
+                    <select class="form-select" id="price-filter">
+                        <option value="" selected>All Prices</option>
+                        <option value="0-20">$0 - $20</option>
+                        <option value="21-50">$21 - $50</option>
+                        <option value="51-70">$51 - $70</option>
+                        <option value="71-100">$71 - $100</option>
+                    </select>
+                </div>
+
+                <!-- Keyword Filter -->
+                <div class="col-md-2">
+                    <input type="text" id="keyword-filter" class="form-control" placeholder="Enter keyword">
+                </div>
+
+                <!-- Filter Button -->
+                <div class="col-md-1 text-end">
+                    <button class="btn btn-outline-dark rounded-pill w-100" id="filter-button">
+                        Filter
+                    </button>
+                </div>
+            </div>
+        </div>
+
 
         <!-- Only for Admin -->
         {% if request.session.user_role == 'admin' %}
@@ -132,18 +190,6 @@
     {% bootstrap_javascript %}
 
     <script>
-        function toggleChat() {
-            const chatBox = document.getElementById("chat-box");
-            const chatToggleBtn = document.getElementById("chat-toggle-btn");
-            if (chatBox.style.display === "none") {
-                chatBox.style.display = "block";
-                chatToggleBtn.style.display = "none";
-            } else {
-                chatBox.style.display = "none";
-                chatToggleBtn.style.display = "block";
-            }
-        }
-    
         function deleteProduct(productId) {
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 

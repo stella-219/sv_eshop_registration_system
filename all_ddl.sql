@@ -56,17 +56,18 @@ CREATE TABLE FOOD_BEVERAGE (
 CREATE TABLE ORDERS (
     Order_ID INT AUTO_INCREMENT PRIMARY KEY,   -- Auto-increment for Order ID
     User_ID INT,
-    Total_Price DECIMAL(10, 2) NOT NULL,
+    Order_Status ENUM('in_progress', 'completed') DEFAULT 'in_progress',    
+    Order_Date DATETIME DEFAULT NULL,                     
     FOREIGN KEY (User_ID) REFERENCES USER(User_ID)
 );
 
 -- Create the Order Item table
 CREATE TABLE ORDER_ITEM (
+    Order_Item_ID INT AUTO_INCREMENT PRIMARY KEY,      
     Order_ID INT,
     Product_ID INT,
     Quantity INT NOT NULL,
-    PRIMARY KEY (Order_ID, Product_ID),
-    FOREIGN KEY (Order_ID) REFERENCES ORDERS(Order_ID),
+    FOREIGN KEY (Order_ID) REFERENCES ORDERS(Order_ID) ON DELETE CASCADE,
     FOREIGN KEY (Product_ID) REFERENCES PRODUCTS(Product_ID)
 );
 

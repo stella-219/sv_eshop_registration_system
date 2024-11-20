@@ -109,35 +109,36 @@ INSERT INTO FOOD_BEVERAGE (Product_ID, Sell_By) VALUES
 
 #ORDER / ORDER ITEMS / RATING
 -- Insert sample data into ORDERS table
-INSERT INTO ORDERS (User_ID, Total_Price) VALUES
-(1, 40.99),    -- 1,2
-(2, 189.99),    -- 3,4
-(3, 38.49),    -- 5,7
-(4, 4.99),    -- 8
-(5, 154.95),   -- 6,12
-(6, 24.50),    -- 15
-(7, 2.97);    -- 14
+INSERT INTO ORDERS (User_ID, Order_Status, Order_Date) VALUES
+(1, 'completed', '2024-11-17'),    -- Order 1 for User 1
+(1, 'completed', '2024-11-17'),    -- Order 2 for User 1
+(2, 'completed', '2024-11-17'),    -- Order 3
+(3, 'completed', '2024-11-17'),    -- Order 4
+(4, 'completed', '2024-11-17'),    -- Order 5
+(5, 'completed', '2024-11-17'),    -- Order 6
+(6, 'completed', '2024-11-17'),    -- Order 7
+(7, 'completed', '2024-11-17');    -- Order 8
 
 -- Insert sample data into ORDER_ITEM table
 INSERT INTO ORDER_ITEM (Order_ID, Product_ID, Quantity) VALUES
 -- Order 1
-(1, 1, 1),     -- Disneyland StellaLou Keychain, 1 quantity at $35.00
-(1, 2, 1),     -- Universal Sticky Notes, 1 quantity at $5.99
+(1, 1, 1),     -- Disneyland StellaLou Keychain, 1 quantity
+(1, 2, 1),     -- Universal Sticky Notes, 1 quantity
 -- Order 2
-(2, 3, 2),     -- Stanley Quencher Tumbler, 2 quantities at $45.00 each
-(2, 4, 1),     -- Logitech MX Master 3S Mouse, 1 quantity at $99.99
+(2, 3, 2),     -- Stanley Quencher Tumbler, 2 quantities
+(2, 4, 1),     -- Logitech MX Master 3S Mouse, 1 quantity
 -- Order 3
-(3, 5, 1),     -- Japanese Kit Kat Multi-Flavor Packet, 1 quantity at $21.99
-(3, 7, 1),     -- 3D Squishy Sakura Notebook, 1 quantity at $12.50
+(3, 5, 1),     -- Japanese Kit Kat Multi-Flavor Packet, 1 quantity
+(3, 7, 1),     -- 3D Squishy Sakura Notebook, 1 quantity
 -- Order 4
-(4, 8, 1),     -- Fresh Cut Fruit Cup, 1 quantity at $4.99
+(4, 8, 1),     -- Fresh Cut Fruit Cup, 1 quantity
 -- Order 5
-(5, 6, 1),     -- Northeastern Hoodie, 1 quantity at $55.00
-(5, 12, 5),    -- NEU Logo Tote Bag, 5 quantities at $19.99 each
+(5, 6, 1),     -- Northeastern Hoodie, 1 quantity
+(5, 12, 5),    -- NEU Logo Tote Bag, 5 quantities
 -- Order 6
-(6, 15, 1),    -- Hee Creek Black Sesame Snack, 1 quantity at $24.50
+(6, 15, 1),    -- Hee Creek Black Sesame Snack, 1 quantity
 -- Order 7
-(7, 14, 3);    -- Arrowhead Mountain Spring Bottle Water, 3 quantities at $0.99 each
+(7, 14, 3);    -- Arrowhead Mountain Spring Bottle Water, 3 quantities
 
 -- Insert sample data into RATING table
 INSERT INTO RATING (Comments, Product_ID, User_ID, Rate_Score) VALUES

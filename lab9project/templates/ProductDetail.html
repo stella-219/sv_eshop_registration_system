@@ -38,14 +38,18 @@
                 <h4 class="text-primary">${{ product.price|floatformat:2 }}</h4>
 
                 <div class="my-4">
-                    <label for="quantity" class="form-label">Quantity</label>
-                    <select id="quantity" class="form-select w-50">
-                        {% for i in quantity_range %}
-                            <option value="{{ i }}">{{ i }}</option>
-                        {% endfor %}
-                    </select>
-                    <button class="btn btn-dark btn-lg mt-3">Add to Bag</button>
-                    <button class="btn btn-dark btn-lg mt-3">View Order</button>
+                    <form id="add-to-order-form" method="POST" action="{% url 'add_to_order' product.product_id %}">
+                        {% csrf_token %}
+                        <label for="quantity" class="form-label">Quantity</label>
+                        <select id="quantity" name="quantity" class="form-select w-50">
+                            {% for i in quantity_range %}
+                                <option value="{{ i }}">{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-dark btn-lg mt-3">Add to Order</button>
+                    </form>
+                    <!-- View Orders Button -->
+                    <a href="{% url 'order_in_process' %}" class="btn btn-outline-primary btn-lg mt-3">View Orders</a>
                 </div>
             </div>
         </div>

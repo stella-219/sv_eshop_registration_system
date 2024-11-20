@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from lab9app import views
-from lab9app.views import ProductListView, ProductDetailView,Product_Create,Product_Delete, sign_in, sign_up,edit_product,sign_out,chat_with_gpt
+from lab9app.views import ProductListView, ProductDetailView,Product_Create,Product_Delete, sign_in, sign_up,edit_product,sign_out,chat_with_gpt, add_to_order,order_in_process,submit_order, chatbox
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -32,4 +32,8 @@ urlpatterns = [
     path('edit/<int:product_id>/', edit_product, name='edit_product'),
     path('sign-out/', sign_out, name='sign_out'),  # Sign Out URL
     path('api/chat/', chat_with_gpt, name='chat_with_gpt'),  # Chat with GPT endpoint
+    path('chatbox/', chatbox, name='chatbox'),
+    path('order-in-process/', order_in_process, name='order_in_process'),
+    path('add-to-order/<int:product_id>/', add_to_order, name='add_to_order'),
+    path('submit-order/', submit_order, name='submit_order'),
 ]
