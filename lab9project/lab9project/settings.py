@@ -86,20 +86,20 @@ if os.getenv('GAE_APPLICATION', None):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'HOST': '/cloudsql/db-group9:us-west1:eshop-project',
-            'USER': 'root',
-            'PASSWORD': '123456',
-            'NAME': 'eshop_db',
+            'HOST': '/cloudsql/',    #update here
+            'USER': '',                         #update here
+            'PASSWORD': '',                     #update here
+            'NAME': '',
         }
     }
 else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'eshop_db',
-            'USER': 'root',
-            'PASSWORD': '123456',
-            'HOST': '34.169.5.143',
+            'NAME': '',           #update here
+            'USER': '',           #update here
+            'PASSWORD': '',       #update here
+            'HOST': '',           #update here
             'PORT': '3306'
         }
     }

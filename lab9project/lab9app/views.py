@@ -12,7 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 
 # Configure your OpenAI API key
-openai.api_key = 'sk-PBT3YDS6b-ezRLY_ScAe6ffk5FjtAxZV6mU5oKyq7hT3BlbkFJD587NH6VbXDkMXc6_TBnbCe9-xuCsUkNhTM6iAa9EA'
+openai.api_key = ''
 
 
 # Product List View (Class-Based)
